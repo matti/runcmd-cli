@@ -22,6 +22,7 @@ module Runcmd
 
         recording_video = File.new "#{recording}.video", "w" if video
         recording_input = File.new "#{recording}.runcmd", "w"
+        recording_input.puts Runcmd::Cli::VERSION
         recording_input.puts cmd
         recording_input.puts args.join(" ")
 
@@ -29,8 +30,12 @@ module Runcmd
         stderr_writer.close
 
         stdin_thr = Thread.new do
-          while c = $stdin.getch
+          loop do
+            started_at = Time.now
+            c = $stdin.getch
             recording_input.print c
+            recording_input.print (Time.now-started_at).floor(2)
+            recording_input.print ':'
             case c
             when "\u0003"
               # control+c

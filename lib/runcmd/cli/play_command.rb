@@ -6,12 +6,13 @@ module Runcmd
   module Cli
     class PlayCommand < Clamp::Command
       parameter "RECORDING", "recording"
-      option ["--speed", "-"], "SPEED", "speed", default: 0.1 do |s|
+      option ["--delay"], "DELAY", "extra delay", default: 0.0 do |s|
         Float(s)
       end
 
       def execute
         recording_input = File.new recording, "r"
+        version = recording_input.readline
         cmd = recording_input.readline
         args = recording_input.readline.split(" ")
 
@@ -25,8 +26,16 @@ module Runcmd
         stdout,stdin,pid = PTY.spawn(env, cmd, *args, err: stderr_writer.fileno)
         stderr_writer.close
 
+        started_at = Time.now
         stdin_thr = Thread.new do
           while c = recording_input.getc
+            time = []
+            loop do
+              t = recording_input.getc
+              break if t == ":"
+              time << t
+            end
+            sleep time.join("").to_f
             case c
             when "\u0003"
               # control+c
@@ -34,7 +43,7 @@ module Runcmd
             else
               stdin.print c
             end
-            sleep speed
+            sleep delay
           end
 
           stdin.close
