@@ -2,12 +2,6 @@
 require "pty"
 require 'io/console'
 
-Signal.trap("INT") {
-  puts "CTRLC"
-  exit if $ctrl_c
-  $ctrl_c = true
-}
-
 module Runcmd
   module Cli
     class RecordCommand < Clamp::Command

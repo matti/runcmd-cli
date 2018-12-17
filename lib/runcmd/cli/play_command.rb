@@ -2,12 +2,6 @@
 require "pty"
 require 'io/console'
 
-# Signal.trap("INT") {
-#   puts "CTRL+C detected, press second time to exit"
-#   exit if $ctrl_c
-#   $ctrl_c = true
-# }
-
 module Runcmd
   module Cli
     class PlayCommand < Clamp::Command
