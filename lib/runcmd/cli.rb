@@ -1,4 +1,5 @@
 require "clamp"
+Clamp.allow_options_after_parameters = true
 
 module Runcmd
   module Cli

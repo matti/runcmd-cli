@@ -60,13 +60,10 @@ module Runcmd
         end
 
         stdout_thr.join
-        puts "stdout closed"
         stdin_thr.kill
 
         stdin_thr.join
-        puts "stdin closed"
         stderr_thr.join
-        puts "stderr closed"
 
         log.close if record
       end
