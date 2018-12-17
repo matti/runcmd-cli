@@ -28,29 +28,57 @@ module Runcmd
 
         started_at = Time.now
         stdin_thr = Thread.new do
-          while c = recording_input.getc
-            time = []
-            loop do
-              t = recording_input.getc
-              break if t == ":"
-              time << t
+          loop do
+            command = recording_input.getc
+            case command
+            when "c"
+              c = recording_input.getc
+              time = []
+              loop do
+                t = recording_input.getc
+                break if t == ":"
+                time << t
+              end
+              sleep time.join("").to_f
+              case c
+              when "\u0003"
+                # control+c
+                stdin.print c
+              else
+                stdin.print c
+              end
+              sleep delay
+            when "a"
+              assert_chars = []
+              loop do
+                assert_c = recording_input.getc
+                case assert_c
+                when "\u0003"
+                  break
+                else
+                  assert_chars << assert_c
+                end
+              end
+
+              assert_string = assert_chars.join("")
+              output_chars = []
+              loop do
+                if $output.join("").match? assert_string
+                  $output = []
+                  break
+                end
+                sleep 0.1
+              end
             end
-            sleep time.join("").to_f
-            case c
-            when "\u0003"
-              # control+c
-              stdin.print c
-            else
-              stdin.print c
-            end
-            sleep delay
           end
 
           stdin.close
         end
 
+        $output = []
         stdout_thr = Thread.new do
           while c = stdout.getc
+            $output << c
             print c
           end
         end

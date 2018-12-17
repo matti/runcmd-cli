@@ -33,14 +33,48 @@ module Runcmd
           loop do
             started_at = Time.now
             c = $stdin.getch
-            recording_input.print c
-            recording_input.print (Time.now-started_at).floor(2)
-            recording_input.print ':'
+            #p c
+
             case c
+            when "\u0010"
+              print "assert: "
+              assert_string = []
+              loop do
+                assert_c = $stdin.getch
+                case assert_c
+                when "\u007F"
+                  next if assert_string.empty?
+
+                  assert_string.pop
+                  $stdout.print "\b"
+                  $stdout.print "\033[K"
+                when "\r"
+                  $stdout.print "\r"
+                  $stdout.print "\033[K"
+                  break
+                when "\e"
+                  $stdin.getch
+                  $stdin.getch
+                  next
+                else
+                  assert_string << assert_c
+                  $stdout.print assert_c
+                end
+              end
+
+              recording_input.print 'a'
+              recording_input.print assert_string.join("")
+              recording_input.print "\u0003"
+
             when "\u0003"
               # control+c
               stdin.print c
             else
+              recording_input.print 'c'
+              recording_input.print c
+              recording_input.print (Time.now-started_at).floor(2)
+              recording_input.print ':'
+
               stdin.print c
             end
           end
