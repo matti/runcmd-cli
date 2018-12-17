@@ -10,10 +10,11 @@ Signal.trap("INT") {
 
 module Runcmd
   module Cli
-    class RunCommand < Clamp::Command
+    class RecordCommand < Clamp::Command
+      parameter "RECORDING", "recording"
       parameter "COMMAND ...", "command"
-      option ["--record","-r"], "RECORD", "record"
 
+      option ["--video", "-v"], "VIDEO", "video"
       def execute
         cmd = command_list.shift
         args = command_list
@@ -25,20 +26,23 @@ module Runcmd
           "COLUMNS" => IO.console.winsize.last.to_s
         }
 
-        log = File.new record, "w" if record
+        recording_video = File.new "#{recording}.video", "w" if video
+        recording_input = File.new "#{recording}.runcmd", "w"
+        recording_input.puts cmd
+        recording_input.puts args.join(" ")
 
         stdout,stdin,pid = PTY.spawn(env, cmd, *args, err: stderr_writer.fileno)
         stderr_writer.close
 
         stdin_thr = Thread.new do
           while c = $stdin.getch
+            recording_input.print c
             case c
             when "\u0003"
               # control+c
               stdin.print c
             else
               stdin.print c
-              log.print c if record
             end
           end
 
@@ -48,14 +52,14 @@ module Runcmd
         stdout_thr = Thread.new do
           while c = stdout.getc
             print c
-            log.print c if record
+            recording_video.print c if video
           end
         end
 
         stderr_thr = Thread.new do
           while c = stderr_reader.getc
             print c
-            log.print c if record
+            recording_video.print c if video
           end
         end
 
@@ -65,7 +69,9 @@ module Runcmd
         stdin_thr.join
         stderr_thr.join
 
-        log.close if record
+        recording_video.close if video
+        recording_input.close
+
       end
     end
   end

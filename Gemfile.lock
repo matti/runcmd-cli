@@ -6,7 +6,7 @@ PATH
 PATH
   remote: .
   specs:
-    runcmd-cli (0.1.2)
+    runcmd-cli (0.2.0)
       clamp
       runcmd
 

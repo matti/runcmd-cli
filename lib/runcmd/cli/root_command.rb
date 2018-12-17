@@ -11,7 +11,7 @@ module Runcmd
       end
 
       subcommand ["version"], "Show version information", VersionCommand
-      subcommand ["run"], "run", RunCommand
+      subcommand ["record"], "record", RecordCommand
       subcommand ["play"], "play", PlayCommand
 
       def self.run
