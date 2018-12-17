@@ -37,7 +37,13 @@ module Runcmd
 
             case c
             when "\u0010"
-              print "assert: "
+              print "\033[s" #save cursor
+              print "\033[0;0f" #move to top left
+              print "\033[K" #erase current line
+              print "\e[36m" #cyan
+              print "Run-CMD> wait_for: "
+              print "\e[0m" #reset
+
               assert_string = []
               loop do
                 assert_c = $stdin.getch
@@ -48,6 +54,9 @@ module Runcmd
                   assert_string.pop
                   $stdout.print "\b"
                   $stdout.print "\033[K"
+                when "\f"
+                  stdin.write "\x1B\x1Bl" # send it forward
+                  break
                 when "\r"
                   $stdout.print "\r"
                   $stdout.print "\033[K"
@@ -66,9 +75,7 @@ module Runcmd
               recording_input.print assert_string.join("")
               recording_input.print "\u0003"
 
-            when "\u0003"
-              # control+c
-              stdin.print c
+              print "\033[u" #restore cursor
             else
               recording_input.print 'c'
               recording_input.print c

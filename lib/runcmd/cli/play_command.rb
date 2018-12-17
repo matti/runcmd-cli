@@ -11,7 +11,18 @@ module Runcmd
       end
 
       def execute
-        recording_input = File.new recording, "r"
+        recording_path = if recording.end_with? ".runcmd"
+          recording
+        else
+          "#{recording}.runcmd"
+        end
+
+        unless File.exist? recording_path
+          $stderr.puts "File #{recording_path} does not exist."
+          exit 1
+        end
+
+        recording_input = File.new recording_path, "r"
         version = recording_input.readline
         cmd = recording_input.readline
         args = recording_input.readline.split(" ")
@@ -61,14 +72,28 @@ module Runcmd
               end
 
               assert_string = assert_chars.join("")
-              output_chars = []
+
               loop do
+                # print "\033[s" #save cursor
+                # print "\033[0;0f" #move to top left
+                # print "\033[K" #erase current line
+                # print "\e[36m" #cyan
+                # print "Run-CMD> waiting for: #{assert_string}"
+                # print "\e[0m" #reset
+                # print "\033[u" #restore cursor
+
                 if $output.join("").match? assert_string
                   $output = []
                   break
                 end
+
                 sleep 0.1
               end
+
+              # print "\033[s" #save cursor
+              # print "\033[0;0f" #move to top left
+              # print "\033[K" #erase current line
+              # print "\033[u" #restore cursor
             end
           end
 
